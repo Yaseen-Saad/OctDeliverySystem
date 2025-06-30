@@ -1,0 +1,41 @@
+<div class="container mt-4 mb-5">
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <div class="card shadow">
+                <div class="card-header">
+                    <h4 class="mb-0">Restaurants</h4>
+                </div>
+                <div class="card-body p-0">
+                    <div class="list-group list-group-flush">
+                        <% if (restaurants && restaurants.length > 0) { %>
+                            <% restaurants.forEach(restaurant => { %>
+                                <a href="/restaurants/<%= restaurant._id %>/menu" 
+                                   class="list-group-item list-group-item-action">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <h5 class="mb-1"><%= restaurant.name %></h5>
+                                            <div class="text-body-secondary">
+                                                <%= restaurant.cuisine %>
+                                            </div>
+                                        </div>
+                                        <div class="text-end">
+                                            <div class="text-body-secondary small">
+                                                Delivery Fee
+                                            </div>
+                                            <strong>$<%= restaurant.deliveryFee.toFixed(2) %></strong>
+                                        </div>
+                                    </div>
+                                </a>
+                            <% }); %>
+                        <% } else { %>
+                            <div class="list-group-item text-center text-body-secondary py-4">
+                                <i class="bi bi-shop display-4 d-block mb-2"></i>
+                                No restaurants available
+                            </div>
+                        <% } %>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

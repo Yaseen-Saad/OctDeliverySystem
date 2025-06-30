@@ -1,0 +1,115 @@
+<%- include('../layout', { title: 'Admin - Orders' }) %>
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Order Management</h1>
+        <div class="btn-group">
+            <button class="btn btn-outline-secondary" onclick="filterOrders('all')">All</button>
+            <button class="btn btn-outline-secondary" onclick="filterOrders('open')">Open</button>
+            <button class="btn btn-outline-secondary" onclick="filterOrders('delivered')">Delivered</button>
+        </div>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-striped" id="ordersTable">
+            <thead>
+                <tr>
+                    <th>Order ID</th>
+                    <th>Restaurant</th>
+                    <th>Created By</th>
+                    <th>Delivery Time</th>
+                    <th>Status</th>
+                    <th>Total Orders</th>
+                    <th>Delivery Fee</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% items.forEach(item => { %>
+                    <tr data-status="<%= item.status %>">
+                        <td><%= item._id.toString().slice(-6).toUpperCase() %></td>
+                        <td><%= item.restaurant.name %></td>
+                        <td>
+                            <%= item.createdBy.name %>
+                            <small class="text-muted d-block">Room: <%= item.createdBy.roomNumber %></small>
+                        </td>
+                        <td>
+                            <%= item.deliveryTime.toLocaleTimeString('en-US', { 
+                                hour: '2-digit', 
+                                minute: '2-digit'
+                            }) %>
+                            <small class="text-muted d-block">
+                                <%= item.deliveryTime.toLocaleDateString() %>
+                            </small>
+                        </td>
+                        <td>
+                            <span class="badge bg-<%= item.status === 'open' ? 'primary' : 'success' %>">
+                                <%= item.status.charAt(0).toUpperCase() + item.status.slice(1) %>
+                            </span>
+                            <% if (item.deliveredAt) { %>
+                                <small class="text-muted d-block">
+                                    Delivered: <%= item.deliveredAt.toLocaleString() %>
+                                </small>
+                            <% } %>
+                        </td>
+                        <td><%= item.individualOrders?.length || 0 %></td>
+                        <td>$<%= item.deliveryFee.toFixed(2) %></td>
+                        <td>
+                            <div class="btn-group">
+                                <% if (item.status === 'open') { %>
+                                    <button class="btn btn-sm btn-success" 
+                                            onclick="updateStatus('<%= item._id %>', 'delivered')">
+                                        Mark Delivered
+                                    </button>
+                                <% } else { %>
+                                    <button class="btn btn-sm btn-warning"
+                                            onclick="updateStatus('<%= item._id %>', 'open')">
+                                        Reopen
+                                    </button>
+                                <% } %>
+                            </div>
+                        </td>
+                    </tr>
+                <% }); %>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+function filterOrders(status) {
+    const rows = document.querySelectorAll('#ordersTable tbody tr');
+    rows.forEach(row => {
+        if (status === 'all' || row.dataset.status === status) {
+            row.style.display = '';
+        } else {
+            row.style.display = 'none';
+        }
+    });
+}
+
+async function updateStatus(orderId, status) {
+    if (!confirm(`Are you sure you want to mark this order as ${status}?`)) {
+        return;
+    }
+
+    try {
+        const response = await fetch(`/admin/orders/${orderId}/status`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ status })
+        });
+
+        const data = await response.json();
+        if (data.success) {
+            window.location.reload();
+        } else {
+            alert(data.error || 'Error updating order status');
+        }
+    } catch (err) {
+        alert('Error updating order status');
+    }
+}
+</script>

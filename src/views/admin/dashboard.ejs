@@ -1,0 +1,161 @@
+<div class="container mt-4">
+    <h1 class="mb-4">Admin Dashboard</h1>
+
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Total Users</h5>
+                    <p class="card-text display-4"><%= stats.totalUsers %></p>
+                    <small>Including <%= stats.admins %> admins</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Active Orders</h5>
+                    <p class="card-text display-4"><%= stats.activeOrders %></p>
+                    <small>Out of <%= stats.totalOrders %> total orders</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Restaurants</h5>
+                    <p class="card-text display-4"><%= stats.totalRestaurants %></p>
+                    <small>Offering delivery service</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Total Revenue</h5>
+                    <p class="card-text display-4">$<%= stats.totalRevenue.toFixed(2) %></p>
+                    <small>From delivery fees</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Quick Actions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="btn-group">
+                        <a href="/admin/users/new" class="btn btn-primary">
+                            <i class="bi bi-person-plus"></i> New User
+                        </a>
+                        <a href="/admin/orders" class="btn btn-success">
+                            <i class="bi bi-list-check"></i> Manage Orders
+                        </a>
+                        <a href="/admin/restaurants" class="btn btn-info">
+                            <i class="bi bi-shop"></i> Manage Restaurants
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- User List -->
+    <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">All Users</h5>
+            <div class="btn-group">
+                <button class="btn btn-sm btn-outline-secondary" onclick="filterUsers('all')">All</button>
+                <button class="btn btn-sm btn-outline-secondary" onclick="filterUsers('admin')">Admins</button>
+                <button class="btn btn-sm btn-outline-secondary" onclick="filterUsers('user')">Users</button>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table" id="usersTable">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Username</th>
+                            <th>Room</th>
+                            <th>Phone</th>
+                            <th>Role</th>
+                            <th>Orders</th>
+                            <th>Total Spent</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% users.forEach(user => { %>
+                            <tr data-role="<%= user.isAdmin ? 'admin' : 'user' %>">
+                                <td><%= user.name %></td>
+                                <td><%= user.username %></td>
+                                <td><%= user.roomNumber %></td>
+                                <td><%= user.phoneNumber %></td>
+                                <td>
+                                    <% if (user.isAdmin) { %>
+                                        <span class="badge bg-primary">Admin</span>
+                                    <% } else { %>
+                                        <span class="badge bg-secondary">User</span>
+                                    <% } %>
+                                </td>
+                                <td><%= user.statistics.totalOrders %></td>
+                                <td>$<%= user.statistics.totalSpent.toFixed(2) %></td>
+                                <td>
+                                    <div class="btn-group">
+                                        <a href="/admin/users/<%= user._id %>/edit" 
+                                           class="btn btn-sm btn-outline-secondary">Edit</a>
+                                        <button onclick="deleteUser('<%= user._id %>')" 
+                                                class="btn btn-sm btn-outline-danger">Delete</button>
+                                    </div>
+                                </td>
+                            </tr>
+                        <% }); %>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function filterUsers(role) {
+    const rows = document.querySelectorAll('#usersTable tbody tr');
+    rows.forEach(row => {
+        if (role === 'all' || row.dataset.role === role) {
+            row.style.display = '';
+        } else {
+            row.style.display = 'none';
+        }
+    });
+}
+
+async function deleteUser(userId) {
+    if (!confirm('Are you sure you want to delete this user?')) {
+        return;
+    }
+
+    try {
+        const response = await fetch(`/admin/users/${userId}`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+
+        const data = await response.json();
+        if (data.success) {
+            window.location.reload();
+        } else {
+            alert(data.error || 'Error deleting user');
+        }
+    } catch (err) {
+        alert('Error deleting user');
+    }
+}
+</script>

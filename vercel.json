@@ -1,0 +1,35 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "src/server.js",
+      "use": "@vercel/node",
+      "config": {
+        "maxDuration": 10,
+        "memory": 1024,
+        "includeFiles": [
+          "src/views/**",
+          "src/models/**",
+          "src/routes/**",
+          "src/middleware/**",
+          "src/scripts/**",
+          "src/utils/**"
+        ]
+      }
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "src/server.js",
+      "headers": {
+        "cache-control": "s-maxage=0",
+        "Set-Cookie": "session=; Path=/; HttpOnly; SameSite=Lax"
+      }
+    }
+  ],
+  "env": {
+    "NODE_ENV": "production"
+  },
+  "regions": ["fra1"]
+}

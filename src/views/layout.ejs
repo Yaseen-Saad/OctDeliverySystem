@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="<%= locals.user?.preferences?.theme || 'system' %>">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= typeof title !== 'undefined' ? title : 'OCT Delivery System' %></title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        /* Custom styles */
+        .table th {
+            white-space: nowrap;
+        }
+        .quantity-input {
+            width: 60px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg bg-body-tertiary">
+        <div class="container">
+            <a class="navbar-brand" href="/items">Group Order System</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <% if (locals.user) { %>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/items">Orders</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/restaurants">Restaurants</a>
+                        </li>
+                        <% if (locals.user.isAdmin) { %>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/admin">Admin</a>
+                            </li>
+                        <% } %>
+                    <% } %>
+                </ul>
+                <% if (locals.user) { %>
+                    <div class="dropdown">
+                        <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                            <i class="bi bi-person-circle"></i>
+                            <%= locals.user.name %>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li>
+                                <span class="dropdown-item-text">
+                                    <i class="bi bi-house-door"></i> Room <%= locals.user.roomNumber %>
+                                </span>
+                            </li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <button class="dropdown-item" onclick="setTheme('light')">
+                                    <i class="bi bi-sun"></i> Light Theme
+                                </button>
+                            </li>
+                            <li>
+                                <button class="dropdown-item" onclick="setTheme('dark')">
+                                    <i class="bi bi-moon"></i> Dark Theme
+                                </button>
+                            </li>
+                            <li>
+                                <button class="dropdown-item" onclick="setTheme('system')">
+                                    <i class="bi bi-display"></i> System Theme
+                                </button>
+                            </li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <a class="dropdown-item text-danger" href="/logout">
+                                    <i class="bi bi-box-arrow-right"></i> Logout
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                <% } else { %>
+                    <a href="/login" class="btn btn-outline-primary">Login</a>
+                <% } %>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <%- typeof body !== 'undefined' ? body : '' %>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Global Functions -->
+    <script>
+        // Global helper functions
+        window.escapeHtml = function(str) {
+            if (typeof str !== 'string') return '';
+            return str
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        };
+
+        // Global Bootstrap initialization
+        window.addEventListener('load', function() {
+            // Initialize Bootstrap components
+            window.bootstrap = bootstrap;
+
+            // Initialize modals
+            window.initModal = function(modalId) {
+                const modalElement = document.getElementById(modalId);
+                if (!modalElement) {
+                    console.error('Modal element not found:', modalId);
+                    return null;
+                }
+                return new bootstrap.Modal(modalElement);
+            };
+
+            // Initialize tooltips
+            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            tooltipTriggerList.forEach(function (tooltipTriggerEl) {
+                new bootstrap.Tooltip(tooltipTriggerEl);
+            });
+
+            // Initialize popovers
+            var popoverTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'));
+            popoverTriggerList.forEach(function (popoverTriggerEl) {
+                new bootstrap.Popover(popoverTriggerEl);
+            });
+
+            // Dispatch event when Bootstrap is ready
+            window.dispatchEvent(new Event('bootstrap-ready'));
+        });
+
+        // Theme Switcher
+        function setTheme(theme) {
+            fetch('/preferences/theme', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ theme })
+            }).then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            }).then(data => {
+                document.documentElement.setAttribute('data-bs-theme', data.theme);
+            }).catch(err => {
+                console.error('Error updating theme:', err);
+                alert('Error updating theme. Please try again.');
+            });
+        }
+
+        // Set initial theme
+        const theme = '<%= locals.user?.preferences?.theme || "system" %>';
+        document.documentElement.setAttribute('data-bs-theme', theme);
+    </script>
+</body>
+</html>

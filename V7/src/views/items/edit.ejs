@@ -1,0 +1,49 @@
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h2>Edit Order</h2>
+            </div>
+            <div class="card-body">
+                <% if (typeof error !== 'undefined' && error) { %>
+                    <div class="alert alert-danger"><%= error %></div>
+                <% } %>
+                <form action="/items/<%= item._id %>" method="POST">
+                    <div class="mb-3">
+                        <label for="restaurant" class="form-label">Restaurant Name</label>
+                        <input type="text" class="form-control" id="restaurant" name="restaurant" value="<%= item.restaurant %>" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="deliveryTime" class="form-label">Delivery Time</label>
+                        <input type="datetime-local" class="form-control" id="deliveryTime" name="deliveryTime"
+                            value="<%= new Date(item.deliveryTime).toISOString().slice(0, 16) %>" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="deliveryFee" class="form-label">Delivery Fee</label>
+                        <div class="input-group">
+                            <span class="input-group-text">$</span>
+                            <input type="number" class="form-control" id="deliveryFee" name="deliveryFee"
+                                step="0.01" min="0" value="<%= item.deliveryFee %>" required>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="specialInstructions" class="form-label">Special Instructions (Optional)</label>
+                        <textarea class="form-control" id="specialInstructions" name="specialInstructions" rows="3"><%= item.specialInstructions %></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="status" class="form-label">Order Status</label>
+                        <select class="form-select" id="status" name="status" required>
+                            <option value="pending" <%= item.status === 'pending' ? 'selected' : '' %>>Pending</option>
+                            <option value="confirmed" <%= item.status === 'confirmed' ? 'selected' : '' %>>Confirmed</option>
+                            <option value="delivered" <%= item.status === 'delivered' ? 'selected' : '' %>>Delivered</option>
+                        </select>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <a href="/items" class="btn btn-secondary">Cancel</a>
+                        <button type="submit" class="btn btn-primary">Update Order</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

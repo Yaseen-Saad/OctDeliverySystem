@@ -1,0 +1,88 @@
+<div class="container mt-4 mb-5">
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <div class="card shadow">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h4 class="mb-0">
+                        <%= restaurant.name %>
+                        <small class="text-body-secondary ms-2"><%= restaurant.cuisine %></small>
+                    </h4>
+                    <div class="text-end">
+                        <div class="text-body-secondary small">Delivery Fee</div>
+                        <strong>$<%= restaurant.deliveryFee.toFixed(2) %></strong>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <!-- Restaurant Info -->
+                    <div class="mb-4">
+                        <div class="text-body-secondary">
+                            <i class="bi bi-telephone"></i> <%= restaurant.phone %>
+                        </div>
+                        <div class="text-body-secondary">
+                            <i class="bi bi-geo-alt"></i> 
+                            <%= restaurant.address.street %>, 
+                            <%= restaurant.address.city %>, 
+                            <%= restaurant.address.state %> 
+                            <%= restaurant.address.zipCode %>
+                        </div>
+                    </div>
+
+                    <!-- Menu Categories -->
+                    <% if (categories && categories.length > 0) { %>
+                        <div class="accordion" id="menuAccordion">
+                            <% categories.forEach((category, index) => { %>
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header">
+                                        <button class="accordion-button <%= index === 0 ? '' : 'collapsed' %>" 
+                                                type="button" 
+                                                data-bs-toggle="collapse" 
+                                                data-bs-target="#category<%= index %>">
+                                            <%= category %>
+                                        </button>
+                                    </h2>
+                                    <div id="category<%= index %>" 
+                                         class="accordion-collapse collapse <%= index === 0 ? 'show' : '' %>"
+                                         data-bs-parent="#menuAccordion">
+                                        <div class="accordion-body p-0">
+                                            <div class="list-group list-group-flush">
+                                                <% menuByCategory[category].forEach(item => { %>
+                                                    <div class="list-group-item">
+                                                        <div class="d-flex justify-content-between align-items-start">
+                                                            <div>
+                                                                <h6 class="mb-1"><%= item.name %></h6>
+                                                                <% if (item.description) { %>
+                                                                    <small class="text-body-secondary">
+                                                                        <%= item.description %>
+                                                                    </small>
+                                                                <% } %>
+                                                            </div>
+                                                            <div class="text-end">
+                                                                <strong>$<%= item.price.toFixed(2) %></strong>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                <% }); %>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            <% }); %>
+                        </div>
+                    <% } else { %>
+                        <div class="text-center text-body-secondary py-4">
+                            <i class="bi bi-menu-app display-4 d-block mb-2"></i>
+                            No menu items available
+                        </div>
+                    <% } %>
+
+                    <!-- Actions -->
+                    <div class="mt-4">
+                        <a href="/restaurants" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-left"></i> Back to Restaurants
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

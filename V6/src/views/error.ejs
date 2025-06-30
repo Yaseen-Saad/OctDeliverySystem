@@ -1,0 +1,11 @@
+<div class="container mt-4">
+    <div class="alert alert-danger">
+        <h4 class="alert-heading">Error</h4>
+        <p><%= message %></p>
+        <% if (error.stack && process.env.NODE_ENV === 'development') { %>
+            <hr>
+            <pre class="mb-0"><%= error.stack %></pre>
+        <% } %>
+    </div>
+    <a href="/" class="btn btn-primary">Return to Home</a>
+</div>

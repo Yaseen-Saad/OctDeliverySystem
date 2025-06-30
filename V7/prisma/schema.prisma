@@ -1,0 +1,108 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id              String    @id @default(uuid())
+  username        String    @unique
+  password        String
+  createdOrders   Item[]    @relation("CreatedBy")
+  individualOrders IndividualOrder[]
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([username])
+}
+
+model Restaurant {
+  id           String   @id @default(uuid())
+  name         String   @unique
+  description  String
+  cuisine      String
+  address      String
+  phone        String
+  openingHours String
+  rating       Float    @default(0)
+  menuImage    String
+  deliveryFee  Float
+  items        Item[]
+  menuItems    MenuItem[]
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([cuisine])
+}
+
+model MenuItem {
+  id          String     @id @default(uuid())
+  name        String
+  description String
+  price       Float
+  category    String
+  restaurant  Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  restaurantId String
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  @@index([restaurantId])
+  @@index([category])
+}
+
+model Item {
+  id              String    @id @default(uuid())
+  restaurant      Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  restaurantId    String
+  deliveryTime    DateTime
+  deliveryFee     Float
+  status          String    @default("open")
+  deliveredAt     DateTime?
+  createdBy       User      @relation("CreatedBy", fields: [createdById], references: [id], onDelete: Cascade)
+  createdById     String
+  individualOrders IndividualOrder[]
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([restaurantId])
+  @@index([createdById])
+  @@index([status, deliveredAt])
+}
+
+model IndividualOrder {
+  id                String   @id @default(uuid())
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId            String
+  groupOrder        Item     @relation(fields: [groupOrderId], references: [id], onDelete: Cascade)
+  groupOrderId      String
+  items             OrderItem[]
+  totalAmount       Float
+  amountPaid        Float    @default(0)
+  paymentStatus     String   @default("unpaid")
+  paymentNotes      String?
+  specialInstructions String?
+  status            String   @default("pending")
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@index([userId])
+  @@index([groupOrderId])
+  @@index([paymentStatus])
+}
+
+model OrderItem {
+  id                String          @id @default(uuid())
+  name              String
+  price             Float
+  quantity          Int
+  specialRequests   String?
+  individualOrder   IndividualOrder @relation(fields: [individualOrderId], references: [id], onDelete: Cascade)
+  individualOrderId String
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+
+  @@index([individualOrderId])
+}

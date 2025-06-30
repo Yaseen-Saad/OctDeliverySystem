@@ -1,0 +1,167 @@
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Restaurant Management</h1>
+        <div class="d-flex gap-2">
+            <a href="/admin/restaurants/new" class="btn btn-primary">
+                <i class="bi bi-plus-circle"></i> Add Restaurant
+            </a>
+            <div class="btn-group">
+                <button class="btn btn-outline-secondary" onclick="filterRestaurants('all')">All</button>
+                <button class="btn btn-outline-secondary" onclick="filterRestaurants('active')">Active</button>
+                <button class="btn btn-outline-secondary" onclick="filterRestaurants('inactive')">Inactive</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <% restaurants.forEach(restaurant => { %>
+            <div class="col-md-6 col-lg-4 mb-4" data-status="<%= restaurant.isActive ? 'active' : 'inactive' %>">
+                <div class="card h-100">
+                    <% if (restaurant.menuImage) { %>
+                        <img src="<%= restaurant.menuImage %>" 
+                             class="card-img-top" 
+                             alt="<%= restaurant.name %> menu"
+                             style="height: 200px; object-fit: cover;">
+                    <% } %>
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <h5 class="card-title mb-3"><%= restaurant.name %></h5>
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" 
+                                       type="checkbox" 
+                                       id="status-<%= restaurant._id %>"
+                                       <%= restaurant.isActive ? 'checked' : '' %>
+                                       onchange="toggleStatus('<%= restaurant._id %>')">
+                            </div>
+                        </div>
+
+                        <p class="card-text">
+                            <small class="text-muted">
+                                <i class="bi bi-tag"></i> <%= restaurant.cuisine || 'Not specified' %>
+                            </small>
+                        </p>
+
+                        <p class="card-text">
+                            <i class="bi bi-geo-alt"></i> 
+                            <% if (restaurant.address) { %>
+                                <%= restaurant.address.street %>, 
+                                <%= restaurant.address.city %>, 
+                                <%= restaurant.address.state %> 
+                                <%= restaurant.address.zipCode %>
+                            <% } else { %>
+                                Address not available
+                            <% } %>
+                        </p>
+
+                        <p class="card-text">
+                            <i class="bi bi-telephone"></i> <%= restaurant.phone || 'Phone not available' %>
+                        </p>
+
+                        <p class="card-text">
+                            <i class="bi bi-clock"></i> <%= restaurant.openingHours || 'Hours not specified' %>
+                        </p>
+
+                        <div class="d-flex justify-content-between align-items-center mt-3">
+                            <div>
+                                <span class="badge bg-info">
+                                    <i class="bi bi-star"></i> <%= (restaurant.rating || 0).toFixed(1) %>
+                                </span>
+                                <span class="badge bg-secondary ms-2">
+                                    $<%= (restaurant.deliveryFee || 0).toFixed(2) %> delivery
+                                </span>
+                            </div>
+                            <div class="btn-group">
+                                <a href="/restaurants/<%= restaurant._id %>/menu" 
+                                   class="btn btn-sm btn-outline-primary">
+                                    View Menu
+                                </a>
+                                <button class="btn btn-sm btn-outline-secondary"
+                                        onclick="editRestaurant('<%= restaurant._id %>')">
+                                    Edit
+                                </button>
+                            </div>
+                        </div>
+
+                        <% if (restaurant.menuItems && restaurant.menuItems.length > 0) { %>
+                            <div class="mt-3">
+                                <small class="text-muted">
+                                    <%= restaurant.menuItems.length %> items on menu
+                                </small>
+                            </div>
+                        <% } %>
+                    </div>
+
+                    <div class="card-footer">
+                        <small class="text-muted">
+                            Added <%= restaurant.createdAt ? restaurant.createdAt.toLocaleDateString() : 'Date not available' %>
+                        </small>
+                        <% if (!restaurant.isActive) { %>
+                            <div class="alert alert-warning mt-2 mb-0 py-1">
+                                <small>Currently inactive</small>
+                            </div>
+                        <% } %>
+                    </div>
+                </div>
+            </div>
+        <% }); %>
+    </div>
+</div>
+
+<script>
+function filterRestaurants(status) {
+    const cards = document.querySelectorAll('.col-md-6');
+    cards.forEach(card => {
+        if (status === 'all' || card.dataset.status === status) {
+            card.style.display = '';
+        } else {
+            card.style.display = 'none';
+        }
+    });
+}
+
+async function toggleStatus(restaurantId) {
+    try {
+        const response = await fetch(`/admin/restaurants/${restaurantId}/toggle`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+
+        const data = await response.json();
+        if (data.success) {
+            const card = document.querySelector(`#status-${restaurantId}`).closest('.col-md-6');
+            card.dataset.status = data.isActive ? 'active' : 'inactive';
+            
+            // Update the inactive alert
+            const footer = card.querySelector('.card-footer');
+            if (data.isActive) {
+                const alert = footer.querySelector('.alert');
+                if (alert) alert.remove();
+            } else {
+                if (!footer.querySelector('.alert')) {
+                    const alert = document.createElement('div');
+                    alert.className = 'alert alert-warning mt-2 mb-0 py-1';
+                    alert.innerHTML = '<small>Currently inactive</small>';
+                    footer.appendChild(alert);
+                }
+            }
+        } else {
+            alert(data.error || 'Error updating restaurant status');
+            // Reset checkbox to original state
+            const checkbox = document.querySelector(`#status-${restaurantId}`);
+            checkbox.checked = !checkbox.checked;
+        }
+    } catch (err) {
+        alert('Error updating restaurant status');
+        // Reset checkbox to original state
+        const checkbox = document.querySelector(`#status-${restaurantId}`);
+        checkbox.checked = !checkbox.checked;
+    }
+}
+
+function editRestaurant(restaurantId) {
+    // Implement restaurant edit functionality
+    alert('Restaurant edit functionality coming soon');
+}
+</script>

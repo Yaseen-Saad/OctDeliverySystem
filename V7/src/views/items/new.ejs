@@ -1,0 +1,134 @@
+<div class="container mt-4 mb-5">
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <div class="card shadow">
+                <div class="card-header">
+                    <h4 class="mb-0">Create New Group Order</h4>
+                </div>
+                <div class="card-body">
+                    <% if (typeof error !== 'undefined' && error) { %>
+                        <div class="alert alert-danger">
+                            <i class="bi bi-exclamation-triangle me-2"></i>
+                            <%= error %>
+                        </div>
+                    <% } %>
+
+                    <form action="/items" method="POST">
+                        <!-- Restaurant Selection -->
+                        <div class="mb-4">
+                            <label for="restaurant" class="form-label">Select Restaurant</label>
+                            <select class="form-select" id="restaurant" name="restaurant" required>
+                                <option value="">Choose a restaurant...</option>
+                                <% restaurants.forEach(restaurant => { %>
+                                    <option value="<%= restaurant._id %>" 
+                                            data-delivery-fee="<%= restaurant.deliveryFee %>">
+                                        <%= restaurant.name %> 
+                                        - Delivery: $<%= restaurant.deliveryFee.toFixed(2) %>
+                                        <% if (restaurant.cuisine) { %>
+                                            - <%= restaurant.cuisine %>
+                                        <% } %>
+                                    </option>
+                                <% }); %>
+                            </select>
+                        </div>
+
+                        <!-- Delivery Time -->
+                        <div class="mb-4">
+                            <label class="form-label">Delivery Time</label>
+                            <div class="row g-3">
+                                <!-- Quick Time Options -->
+                                <div class="col-md-6">
+                                    <div class="btn-group w-100" role="group">
+                                        <input type="radio" class="btn-check" name="timeOption" id="time2h" value="2" checked>
+                                        <label class="btn btn-outline-primary" for="time2h">+2 Hours</label>
+
+                                        <input type="radio" class="btn-check" name="timeOption" id="time4h" value="4">
+                                        <label class="btn btn-outline-primary" for="time4h">+4 Hours</label>
+
+                                        <input type="radio" class="btn-check" name="timeOption" id="time6h" value="6">
+                                        <label class="btn btn-outline-primary" for="time6h">+6 Hours</label>
+                                    </div>
+                                </div>
+                                <!-- Custom Time Input -->
+                                <div class="col-md-6">
+                                    <input type="datetime-local" 
+                                           class="form-control" 
+                                           id="deliveryTime" 
+                                           name="deliveryTime"
+                                           required>
+                                </div>
+                            </div>
+                            <div class="form-text">
+                                Delivery time must be at least 30 minutes from now
+                            </div>
+                        </div>
+
+                        <!-- Room Number -->
+                        <div class="mb-4">
+                            <label for="tempRoom" class="form-label">Delivery Room</label>
+                            <div class="input-group">
+                                <span class="input-group-text border-end-0 bg-body">
+                                    <i class="bi bi-house-door"></i>
+                                </span>
+                                <input type="text" 
+                                       class="form-control border-start-0" 
+                                       id="tempRoom" 
+                                       name="tempRoom"
+                                       placeholder="Leave empty to use your default room"
+                                       value="<%= user.roomNumber %>">
+                            </div>
+                            <div class="form-text">
+                                Current room: <%= user.roomNumber %>
+                            </div>
+                        </div>
+
+                        <!-- Message -->
+                        <div class="mb-4">
+                            <label for="message" class="form-label">Group Message (Optional)</label>
+                            <textarea class="form-control" 
+                                      id="message" 
+                                      name="message" 
+                                      rows="2"
+                                      placeholder="Any notes for the group? (e.g., 'Meeting in my room to split delivery fee')"></textarea>
+                        </div>
+
+                        <!-- Submit -->
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="bi bi-plus-circle"></i> Create Group Order
+                            </button>
+                            <a href="/items" class="btn btn-outline-secondary">
+                                <i class="bi bi-arrow-left"></i> Back to Orders
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Set minimum delivery time to 30 minutes from now
+    const deliveryTimeInput = document.getElementById('deliveryTime');
+    const minTime = new Date();
+    minTime.setMinutes(minTime.getMinutes() + 30);
+    deliveryTimeInput.min = minTime.toISOString().slice(0, 16);
+
+    // Handle quick time options
+    document.querySelectorAll('input[name="timeOption"]').forEach(radio => {
+        radio.addEventListener('change', function() {
+            if (this.checked) {
+                const hours = parseInt(this.value);
+                const newTime = new Date();
+                newTime.setHours(newTime.getHours() + hours);
+                deliveryTimeInput.value = newTime.toISOString().slice(0, 16);
+            }
+        });
+    });
+
+    // Set default delivery time to 2 hours from now
+    const defaultTime = new Date();
+    defaultTime.setHours(defaultTime.getHours() + 2);
+    deliveryTimeInput.value = defaultTime.toISOString().slice(0, 16);
+</script>
